@@ -166,13 +166,19 @@
       <strong>títulos de Liga</strong> o <strong>pronósticos de partidos</strong>.
     </div>
 
-    <div id="chat" class="chat-window">
-      <div class="msg system">
-        Escribe tu pregunta sobre LaLiga. Ejemplos:
-        <br>- "Dame la clasificación actual de LaLiga"
-        <br>- "¿Quién tiene más ligas, el Real Madrid o el Barcelona?"
-      </div>
-    </div>
+  <div id="chat">
+    <div id="messages"></div>
+
+    <form id="chat-form">
+      <input
+        id="user-input"
+        type="text"
+        placeholder="Escribe tu pregunta sobre LaLiga..."
+        autocomplete="off"
+      />
+      <button id="send-btn" type="submit">Enviar</button>
+    </form>
+  </div>
 
     <form id="form">
       <textarea id="input" placeholder="Escribe tu pregunta sobre LaLiga..."></textarea>
@@ -184,73 +190,75 @@
   </div>
 
   <script>
-    // ⚠️ Pon aquí TU endpoint FastAPI de Codespaces:
-    const API_URL = "https://urban-guacamole-5w9qx97r79hv9q4-8000.app.github.dev/docs#/default/chat_endpoint_chat_post";
+  const API_URL =
+    "https://urban-guacamole-5w9qx97r79hv9q4-8000.app.github.dev/docs#/default/chat_endpoint_chat_post";
 
-    const chatEl = document.getElementById("chat");
-    const formEl = document.getElementById("form");
-    const inputEl = document.getElementById("input");
-    const sendBtn = document.getElementById("sendBtn");
+  const messagesEl = document.getElementById("messages");
+  const formEl = document.getElementById("chat-form");
+  const inputEl = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send-btn");
 
-    function appendMessage(text, type = "bot") {
-      const div = document.createElement("div");
-      div.className = "msg " + type;
-      div.innerHTML = text;
-      chatEl.appendChild(div);
-      chatEl.scrollTop = chatEl.scrollHeight;
-    }
+  function appendMessage(sender, text) {
+    const bubble = document.createElement("div");
+    bubble.className = sender === "user" ? "msg msg-user" : "msg msg-bot";
+    bubble.textContent = text;
+    messagesEl.appendChild(bubble);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
 
-    formEl.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const question = inputEl.value.trim();
-      if (!question) return;
+  formEl.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-      appendMessage(question, "user");
-      inputEl.value = "";
-      inputEl.focus();
+    const pregunta = (inputEl.value || "").trim();
+    if (!pregunta) return;
 
-      const thinkingId = "thinking-" + Date.now();
-      appendMessage(<em id="${thinkingId}">Pensando...</em>, "system");
-      sendBtn.disabled = true;
+    // 1) pinta el mensaje del usuario
+    appendMessage("user", pregunta);
+    inputEl.value = "";
+    inputEl.focus();
+    if (sendBtn) sendBtn.disabled = true;
 
+    try {
+      // 2) llama a tu API igual que en Swagger
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ pregunta: pregunta }),
+      });
+
+      let data;
       try {
-        const resp = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pregunta: question })
-        });
-
-        if (!resp.ok) {
-          throw new Error("Error HTTP " + resp.status);
-        }
-
-        const data = await resp.json();
-
-        // Quitar el "Pensando..."
-        const thinkingEl = document.getElementById(thinkingId);
-        if (thinkingEl && thinkingEl.parentNode) {
-          thinkingEl.parentNode.remove();
-        }
-
-        let text = "";
-        if (data.respuesta) {
-          text += data.respuesta.replace(/\n/g, "<br>");
-        }
-        if (data.tabla) {
-          text += "<br><br><pre>" + data.tabla + "</pre>";
-        }
-
-        appendMessage(text || "(Respuesta vacía de la API)", "bot");
-      } catch (err) {
-        const thinkingEl = document.getElementById(thinkingId);
-        if (thinkingEl && thinkingEl.parentNode) {
-          thinkingEl.parentNode.remove();
-        }
-        appendMessage("⚠️ Error llamando a la API: " + err.message, "system");
-      } finally {
-        sendBtn.disabled = false;
+        data = await resp.json();
+      } catch (e) {
+        appendMessage("bot", "⚠️ No pude leer la respuesta JSON de la API.");
+        return;
       }
-    });
-  </script>
+
+      if (!resp.ok) {
+        appendMessage(
+          "bot",
+          "⚠️ Error HTTP " +
+            resp.status +
+            " - " +
+            (data.detail || JSON.stringify(data))
+        );
+        return;
+      }
+
+      // 3) pinta la respuesta del backend
+      const texto =
+        (data && (data.respuesta || data.response || data.message)) ||
+        JSON.stringify(data);
+      appendMessage("bot", texto);
+    } catch (err) {
+      appendMessage("bot", "⚠️ Error llamando a la API: " + err.message);
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  });
+</script>
 </body>
 </html>
