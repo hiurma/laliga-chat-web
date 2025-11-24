@@ -2,263 +2,144 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat LaLiga RAG</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0b1120;
-      color: #e5e7eb;
-      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0e1116;
+      color: #e6edf3;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 2rem 1rem;
+      padding: 30px;
     }
-
-    .app {
-      background: #020617;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      max-width: 800px;
+    .chatbox {
       width: 100%;
-      padding: 1.5rem;
-      border: 1px solid #1f2937;
+      max-width: 820px;
+      background: #151a22;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.35);
     }
-
-    h1 {
-      margin-top: 0;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
-
-    h1 span.logo {
-      display: inline-flex;
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a, #15803d);
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: .9rem;
-    }
-
-    .subtitle {
-      font-size: .9rem;
-      color: #9ca3af;
-      margin-bottom: 1rem;
-    }
-
-    .chat-window {
-      background: #020617;
-      border-radius: 12px;
-      border: 1px solid #1f2937;
-      padding: 1rem;
+    h1 { font-size: 20px; margin: 0 0 6px 0; }
+    .sub { opacity:.8; font-size: 13px; margin-bottom: 12px; }
+    .msgs {
       height: 420px;
       overflow-y: auto;
-      font-size: .9rem;
-    }
-
-    .msg {
-      margin-bottom: 0.75rem;
-      line-height: 1.4;
-      white-space: pre-wrap;
-    }
-
-    .msg.user {
-      text-align: right;
-      color: #e5e7eb;
-    }
-
-    .msg.bot {
-      text-align: left;
-      color: #d1d5db;
-    }
-
-    .msg.system {
-      text-align: center;
-      color: #9ca3af;
-      font-style: italic;
-    }
-
-    .msg strong {
-      color: #22c55e;
-    }
-
-    .msg pre {
-      background: #020617;
-      border-radius: 8px;
-      padding: .5rem .75rem;
-      border: 1px solid #1f2937;
-      overflow-x: auto;
-      font-size: .8rem;
-    }
-
-    form {
-      margin-top: 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    textarea {
-      flex: 1;
-      resize: none;
-      min-height: 52px;
-      max-height: 120px;
+      background: #0f141c;
       border-radius: 10px;
-      border: 1px solid #4b5563;
-      padding: .5rem .75rem;
-      background: #020617;
-      color: #e5e7eb;
-      font-family: inherit;
-      font-size: .9rem;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #202636;
     }
-
-    textarea:focus {
+    .msg { margin: 8px 0; line-height: 1.35; }
+    .me { color: #9cdcfe; }
+    .bot { color: #b5f5d1; }
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #2a3145;
+      background: #0f141c;
+      color: #e6edf3;
+      font-size: 15px;
       outline: none;
-      border-color: #22c55e;
-      box-shadow: 0 0 0 1px rgba(34,197,94,0.6);
     }
-
     button {
+      padding: 0 16px;
       border-radius: 10px;
       border: none;
-      padding: 0 1rem;
-      background: #22c55e;
-      color: #022c22;
-      font-weight: 600;
+      background: #28a745;
+      color: white;
+      font-weight: 700;
       cursor: pointer;
-      font-size: .9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 90px;
     }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: wait;
-    }
-
-    .hint {
-      margin-top: .5rem;
-      font-size: .75rem;
-      color: #6b7280;
-    }
-
-    a {
-      color: #38bdf8;
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    pre {
+      white-space: pre-wrap;
+      background: #0b0f15;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #252c3e;
+      margin-top: 6px;
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <h1>
-      <span class="logo">⚽</span>
-      Chat LaLiga RAG
-    </h1>
-    <div class="subtitle">
-      Pregúntame por la <strong>clasificación actual</strong>, 
-      <strong>títulos de Liga</strong> o <strong>pronósticos de partidos</strong>.
-    </div>
+  <div class="chatbox">
+    <h1>Chat LaLiga RAG</h1>
+    <div class="sub">Pregúntame por clasificación, títulos o fichajes.</div>
 
-  <div id="chat">
-    <div id="messages"></div>
+    <div id="msgs" class="msgs"></div>
 
-    <form id="chat-form">
-      <input
-        id="user-input"
-        type="text"
-        placeholder="Escribe tu pregunta sobre LaLiga..."
-        autocomplete="off"
-      />
-      <button id="send-btn" type="submit">Enviar</button>
-    </form>
-  </div>
-
-    <form id="form">
-      <textarea id="input" placeholder="Escribe tu pregunta sobre LaLiga..."></textarea>
-      <button type="submit" id="sendBtn">Enviar</button>
-    </form>
-    <div class="hint">
-      La API funciona mientras tu servidor FastAPI en Codespaces esté encendido.
+    <div class="row">
+      <input id="q" placeholder="Escribe tu pregunta sobre LaLiga..." />
+      <button id="send">Enviar</button>
     </div>
   </div>
 
   <script>
-  const API_URL =
-    "https://lag-rag-api.onrender.com/chat"; 
+    // ✅ URL de tu API en Render:
+    const API_URL = "https://lag-rag-api.onrender.com/chat";
 
-  const messagesEl = document.getElementById("messages");
-  const formEl = document.getElementById("chat-form");
-  const inputEl = document.getElementById("user-input");
-  const sendBtn = document.getElementById("send-btn");
+    const msgs = document.getElementById("msgs");
+    const q = document.getElementById("q");
+    const send = document.getElementById("send");
 
-  function appendMessage(sender, text) {
-    const bubble = document.createElement("div");
-    bubble.className = sender === "user" ? "msg user" : "msg bot";
-    bubble.textContent = text;
-    messagesEl.appendChild(bubble);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  formEl.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const pregunta = (inputEl.value || "").trim();
-    if (!pregunta) return;
-
-    // 1) pinta el mensaje del usuario
-    appendMessage("user", pregunta);
-    inputEl.value = "";
-    inputEl.focus();
-    if (sendBtn) sendBtn.disabled = true;
-
-    try {
-      // 2) llama a tu API igual que en Swagger
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ pregunta: pregunta }),
-      });
-
-      let data;
-      try {
-        data = await resp.json();
-      } catch (e) {
-        appendMessage("bot", "⚠️ No pude leer la respuesta JSON de la API.");
-        return;
-      }
-
-      if (!resp.ok) {
-        appendMessage(
-          "bot",
-          "⚠️ Error HTTP " +
-            resp.status +
-            " - " +
-            (data.detail || JSON.stringify(data))
-        );
-        return;
-      }
-
-      // 3) pinta la respuesta del backend
-      const texto =
-        (data && (data.respuesta || data.response || data.message)) ||
-        JSON.stringify(data);
-      appendMessage("bot", texto);
-    } catch (err) {
-      appendMessage("bot", "⚠️ Error llamando a la API: " + err.message);
-    } finally {
-      if (sendBtn) sendBtn.disabled = false;
+    function addMsg(text, cls) {
+      const div = document.createElement("div");
+      div.className = "msg " + cls;
+      div.innerHTML = text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
     }
-  });
-</script>
+
+    async function ask() {
+      const question = q.value.trim();
+      if (!question) return;
+
+      addMsg("🧑‍💻 " + question, "me");
+      q.value = "";
+      send.disabled = true;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pregunta: question })
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error("HTTP " + res.status + " - " + t);
+        }
+
+        const data = await res.json();
+
+        // data.respuesta es lo principal
+        addMsg("🤖 " + (data.respuesta ?? "(sin respuesta)"), "bot");
+
+        // si viene tabla markdown/array, la mostramos
+        if (data.tabla) {
+          addMsg("<pre>" + data.tabla + "</pre>", "bot");
+        }
+
+      } catch (e) {
+        addMsg("⚠️ Error llamando a la API: " + e.message, "bot");
+      } finally {
+        send.disabled = false;
+        q.focus();
+      }
+    }
+
+    send.addEventListener("click", ask);
+    q.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") ask();
+    });
+  </script>
 </body>
 </html>
