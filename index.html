@@ -160,7 +160,8 @@
   <script>
     // ✅ URLs de tu API en Render
     const API_URL   = "https://lag-rag-api.onrender.com/chat";
-    const CHART_URL = "https://lag-rag-api.onrender.com/chart"; // ajusta si tu endpoint es distinto
+    // 👉 Aquí estaba el fallo: antes ponía /chart, pero tu backend expone /visual
+    const CHART_URL = "https://lag-rag-api.onrender.com/visual";
 
     const msgs  = document.getElementById("msgs");
     const q     = document.getElementById("q");
@@ -240,7 +241,7 @@
     // 🔹 Generar visualización (gráfica) desde el backend
     async function showChart() {
       btnChart.disabled = true;
-      addMsg("🧑‍💻 Generar visualización de la clasificación…", "me");
+      addMsg("🧑‍💻 Generando visualización de la clasificación…", "me");
 
       try {
         const res = await fetch(CHART_URL, {
@@ -254,7 +255,7 @@
 
         const data = await res.json();
 
-        // Intentamos ser flexibles con el nombre del campo
+        // El backend devuelve { ok: True, image: "<base64>" }
         const imgBase64 = data.image || data.img || data.image_base64;
         const titulo    = data.titulo || data.title || "Visualización generada";
 
